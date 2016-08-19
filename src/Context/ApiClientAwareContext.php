@@ -25,7 +25,7 @@ interface ApiClientAwareContext extends Context
     /**
      * Sets Guzzle Client instance.
      *
-     * @param \GuzzleHttp\Client $client Guzzle client.
+     * @param \GuzzleHttp\ClientInterface $client Guzzle client.
      *
      * @return void
      */

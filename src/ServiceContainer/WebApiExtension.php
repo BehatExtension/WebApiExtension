@@ -13,7 +13,6 @@ namespace Behat\WebApiExtension\ServiceContainer;
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
-use GuzzleHttp\ClientInterface;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -69,19 +68,7 @@ class WebApiExtension implements ExtensionInterface
 
     private function loadClient(ContainerBuilder $container, $config)
     {
-        // Guzzle 6 BC bridge
-        if (version_compare(ClientInterface::VERSION, '6.0', '>=')) {
-            $config['base_uri'] = $config['base_url'];
-            unset($config['bar_url']);
-
-            if (isset($config['defaults'])) {
-                $defaults = $config['defaults'];
-                unset($config['defaults']);
-                $config = array_merge($config, $defaults);
-            }
-        }
-
-        $definition = new Definition('GuzzleHttp\Client', array($config));
+        $definition = new Definition('GuzzleHttp\Client', array(array('base_uri' => $config['base_url'])));
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
 

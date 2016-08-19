@@ -10,14 +10,12 @@
 
 namespace Behat\WebApiExtension\Context;
 
+use Assert\Assertion;
 use Behat\Gherkin\Node\PyStringNode;
 use Behat\Gherkin\Node\TableNode;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
-use PHPUnit_Framework_Assert as Assertions;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
 
 /**
  * Provides web API description definitions.
@@ -39,19 +37,19 @@ class WebApiContext implements ApiClientAwareContext
     /**
      * @var array
      */
-    private $headers = array();
+    private $headers = [];
 
     /**
-     * @var \GuzzleHttp\Message\RequestInterface|RequestInterface
+     * @var \Psr\Http\Message\RequestInterface
      */
     private $request;
 
     /**
-     * @var \GuzzleHttp\Message\ResponseInterface|ResponseInterface
+     * @var \Psr\Http\Message\ResponseInterface
      */
     private $response;
 
-    private $placeHolders = array();
+    private $placeHolders = [];
 
     /**
      * {@inheritdoc}
@@ -101,16 +99,9 @@ class WebApiContext implements ApiClientAwareContext
     {
         $url = $this->prepareUrl($url);
 
-        if (version_compare(ClientInterface::VERSION, '6.0', '>=')) {
-            $this->request = new Request($method, $url, $this->headers);
-        } else {
-            $this->request = $this->getClient()->createRequest($method, $url);
-            if (!empty($this->headers)) {
-                $this->request->addHeaders($this->headers);
-            }
-        }
-
-        $this->sendRequest();
+        $this->sendRequest($method, $url, array(
+            'headers' => $this->headers,
+        ));
     }
 
     /**
@@ -125,26 +116,16 @@ class WebApiContext implements ApiClientAwareContext
     public function iSendARequestWithValues($method, $url, TableNode $post)
     {
         $url = $this->prepareUrl($url);
-        $fields = array();
+        $fields = [];
 
         foreach ($post->getRowsHash() as $key => $val) {
             $fields[$key] = $this->replacePlaceHolder($val);
         }
 
-        $bodyOption = array(
-          'body' => json_encode($fields),
-        );
-
-        if (version_compare(ClientInterface::VERSION, '6.0', '>=')) {
-            $this->request = new Request($method, $url, $this->headers, $bodyOption['body']);
-        } else {
-            $this->request = $this->getClient()->createRequest($method, $url, $bodyOption);
-            if (!empty($this->headers)) {
-                $this->request->addHeaders($this->headers);
-            }
-        }
-
-        $this->sendRequest();
+        $this->sendRequest($method, $url, array(
+            'headers' => $this->headers,
+            'json' => $fields,
+        ));
     }
 
     /**
@@ -161,20 +142,10 @@ class WebApiContext implements ApiClientAwareContext
         $url = $this->prepareUrl($url);
         $string = $this->replacePlaceHolder(trim($string));
 
-        if (version_compare(ClientInterface::VERSION, '6.0', '>=')) {
-            $this->request = new Request($method, $url, $this->headers, $string);
-        } else {
-            $this->request = $this->getClient()->createRequest(
-                $method,
-                $url,
-                array(
-                    'headers' => $this->getHeaders(),
-                    'body' => $string,
-                )
-            );
-        }
-
-        $this->sendRequest();
+        $this->sendRequest($method, $url, array(
+            'headers' => $this->headers,
+            'body' => $string,
+        ));
     }
 
     /**
@@ -191,21 +162,13 @@ class WebApiContext implements ApiClientAwareContext
         $url = $this->prepareUrl($url);
         $body = $this->replacePlaceHolder(trim($body));
 
-        $fields = array();
+        $fields = [];
         parse_str(implode('&', explode("\n", $body)), $fields);
 
-        if (version_compare(ClientInterface::VERSION, '6.0', '>=')) {
-            $this->request = new Request($method, $url, ['Content-Type' => 'application/x-www-form-urlencoded'], http_build_query($fields, null, '&'));
-        } else {
-            $this->request = $this->getClient()->createRequest($method, $url);
-            /** @var \GuzzleHttp\Post\PostBodyInterface $requestBody */
-            $requestBody = $this->request->getBody();
-            foreach ($fields as $key => $value) {
-                $requestBody->setField($key, $value);
-            }
-        }
-
-        $this->sendRequest();
+        $this->sendRequest($method, $url, array(
+            'headers' => $this->headers,
+            'form_params' => $fields,
+        ));
     }
 
     /**
@@ -218,8 +181,8 @@ class WebApiContext implements ApiClientAwareContext
     public function theResponseCodeShouldBe($code)
     {
         $expected = intval($code);
-        $actual = intval($this->response->getStatusCode());
-        Assertions::assertSame($expected, $actual);
+        $actual = intval($this->getResponse()->getStatusCode());
+        Assertion::eq($actual, $expected);
     }
 
     /**
@@ -232,8 +195,8 @@ class WebApiContext implements ApiClientAwareContext
     public function theResponseShouldContain($text)
     {
         $expectedRegexp = '/' . preg_quote($text) . '/i';
-        $actual = (string) $this->response->getBody();
-        Assertions::assertRegExp($expectedRegexp, $actual);
+        $actual = (string) $this->getResponse()->getBody()->getContents();
+        Assertion::regex($actual, $expectedRegexp);
     }
 
     /**
@@ -246,8 +209,16 @@ class WebApiContext implements ApiClientAwareContext
     public function theResponseShouldNotContain($text)
     {
         $expectedRegexp = '/' . preg_quote($text) . '/';
-        $actual = (string) $this->response->getBody();
-        Assertions::assertNotRegExp($expectedRegexp, $actual);
+        $actual = (string) $this->getResponse()->getBody()->getContents();
+
+        try {
+            Assertion::regex($actual, $expectedRegexp);
+        } catch (\InvalidArgumentException $e) {
+            return;
+        }
+
+        $message = sprintf('Value "%s" matches expression.', $actual);
+        throw new \InvalidArgumentException($message, Assertion::INVALID_REGEX, null, $actual, ['pattern' => $expectedRegexp]);
     }
 
     /**
@@ -264,7 +235,7 @@ class WebApiContext implements ApiClientAwareContext
     public function theResponseShouldContainJson(PyStringNode $jsonString)
     {
         $etalon = json_decode($this->replacePlaceHolder($jsonString->getRaw()), true);
-        $actual = json_decode($this->response->getBody(), true);
+        $actual = json_decode($this->getResponse()->getBody()->getContents(), true);
 
         if (null === $etalon) {
             throw new \RuntimeException(
@@ -274,15 +245,29 @@ class WebApiContext implements ApiClientAwareContext
 
         if (null === $actual) {
             throw new \RuntimeException(
-              "Can not convert actual to json:\n" . $this->replacePlaceHolder((string) $this->response->getBody())
+              "Can not convert actual to json:\n" . $this->replacePlaceHolder((string) $this->getResponse()->getBody()->getContents())
             );
         }
 
-        Assertions::assertGreaterThanOrEqual(count($etalon), count($actual));
+        Assertion::greaterOrEqualThan(count($actual), count($etalon));
         foreach ($etalon as $key => $needle) {
-            Assertions::assertArrayHasKey($key, $actual);
-            Assertions::assertEquals($etalon[$key], $actual[$key]);
+            Assertion::keyExists($actual, $key);
+            Assertion::eq($actual[$key], $etalon[$key]);
         }
+    }
+
+    /**
+     * Check if the response header has a specific value.
+     *
+     * @param string $httpHeader
+     * @param string $expected
+     *
+     * @Then /^the response "([^"]*)" header should be "([^"]*)"$/
+     */
+    public function theResponseHeaderShouldBe($httpHeader, $expected)
+    {
+        $actual = $this->getResponse()->getHeaderLine($httpHeader);
+        Assertion::eq($expected, $actual);
     }
 
     /**
@@ -292,16 +277,22 @@ class WebApiContext implements ApiClientAwareContext
      */
     public function printResponse()
     {
-        $request = $this->request;
-        $response = $this->response;
+        $request = '';
+        if ($this->getRequest() instanceof Request) {
+            $request = sprintf(
+                "%s %s => ",
+                $this->getRequest()->getMethod(),
+                $this->getRequest()->getUri()
+            );
+        }
 
-        echo sprintf(
-            "%s %s => %d:\n%s",
-            $request->getMethod(),
-            (string) ($request instanceof RequestInterface ? $request->getUri() : $request->getUrl()),
-            $response->getStatusCode(),
-            (string) $response->getBody()
+        $response = sprintf(
+            "%d:\n%s",
+            $this->getResponse()->getStatusCode(),
+            $this->getResponse()->getBody()
         );
+
+         echo $request.$response;
     }
 
     /**
@@ -387,24 +378,53 @@ class WebApiContext implements ApiClientAwareContext
         }
     }
 
-    private function sendRequest()
+    /**
+     * Returns the response object
+     *
+     * @return \Psr\Http\Message\ResponseInterface
+     */
+    protected function getResponse()
+    {
+        Assertion::notNull($this->response);
+
+        return $this->response;
+    }
+
+    /**
+     * @param string $method
+     * @param string $url
+     * @param array $options
+     */
+    private function sendRequest($method, $url, $options)
     {
         try {
-            $this->response = $this->getClient()->send($this->request);
-        } catch (RequestException $e) {
-            $this->response = $e->getResponse();
-
-            if (null === $this->response) {
+            $this->response = $this->getClient()->request($method, $url, $options);
+        } catch (ClientException $e) {
+            $this->request = $e->getRequest();
+            if (null === $e->getResponse()) {
                 throw $e;
             }
+            $this->response = $e->getResponse();
         }
     }
 
-    private function getClient()
+
+    /**
+     * Returns the response object
+     *
+     * @return \Psr\Http\Message\RequestInterface
+     */
+    protected function getRequest()
     {
-        if (null === $this->client) {
-            throw new \RuntimeException('Client has not been set in WebApiContext');
-        }
+        return $this->request;
+    }
+
+    /**
+     * @return \GuzzleHttp\ClientInterface
+     */
+    protected function getClient()
+    {
+        Assertion::notNull($this->client, 'Client has not been set in WebApiContext');
 
         return $this->client;
     }

@@ -1,5 +1,6 @@
 <?php
 
+use Assert\Assertion;
 use Behat\Behat\Context\SnippetAcceptingContext;
 use Behat\Gherkin\Node\PyStringNode;
 use Symfony\Component\Process\PhpExecutableFinder;
@@ -119,7 +120,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function theOutputShouldContain(PyStringNode $text)
     {
-        PHPUnit_Framework_Assert::assertContains($this->getExpectedOutput($text), $this->getOutput());
+        Assertion::contains($this->getOutput(), $this->getExpectedOutput($text));
     }
 
     private function getExpectedOutput(PyStringNode $expectedText)
@@ -162,13 +163,13 @@ class FeatureContext implements SnippetAcceptingContext
                 echo 'Actual output:' . PHP_EOL . PHP_EOL . $this->getOutput();
             }
 
-            PHPUnit_Framework_Assert::assertNotEquals(0, $this->getExitCode());
+            Assertion::notEq(0, $this->getExitCode());
         } else {
             if (0 !== $this->getExitCode()) {
                 echo 'Actual output:' . PHP_EOL . PHP_EOL . $this->getOutput();
             }
 
-            PHPUnit_Framework_Assert::assertEquals(0, $this->getExitCode());
+            Assertion::eq(0, $this->getExitCode());
         }
     }
 
