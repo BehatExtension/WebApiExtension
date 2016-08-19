@@ -44,10 +44,10 @@ $app->match(
         }
 
         $ret['headers'] = [];
-        foreach ($request->headers->all() as $k => $v) {
+        foreach ($request->getHeaders() as $k => $v) {
             $ret['headers'][$k] = $v;
         }
-        foreach ($request->query->all() as $k => $v) {
+        foreach ($request->getQueryParams() as $k => $v) {
             $ret['query'][$k] = $v;
         }
         $response = new JsonResponse($ret);
