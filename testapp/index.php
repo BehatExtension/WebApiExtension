@@ -22,6 +22,7 @@ $app->match(
         $ret['method'] = $request->getMethod();
 
         // Forms should be read from request, other data straight from input.
+        $requestData = $request->getParsedBody();
         if (!empty($requestData)) {
             foreach ($requestData as $key => $value) {
                 $ret[$key] = $value;
