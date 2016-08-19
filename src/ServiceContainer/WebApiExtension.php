@@ -54,7 +54,6 @@ class WebApiExtension implements ExtensionInterface
             ->children()
                 ->scalarNode('base_url')->defaultValue('http://127.0.0.1')->end()
                 ->booleanNode('verify')->defaultTrue()->end()
-                ->scalarNode('tls_version')->defaultValue('CURL_SSLVERSION_TLSv1_0')->end()
             ->end();
     }
 
@@ -73,9 +72,6 @@ class WebApiExtension implements ExtensionInterface
         $definition = new Definition(Client::class, [[
             'base_uri' => $config['base_url'],
             'verify'   => $config['verify'],
-            'curl' => [
-                CURLOPT_SSLVERSION => $$tls_version,
-            ]
         ]]);
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
