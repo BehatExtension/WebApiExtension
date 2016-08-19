@@ -9,10 +9,10 @@ Feature: client aware context
       <?php
 
       use Assert\Assertion;
-      use Behat\WebApiExtension\Context\ApiClientAwareContext;
+      use BehatExtension\WebApiExtension\Context\ApiClientAwareContextInterface;
       use GuzzleHttp\ClientInterface;
 
-      class FeatureContext implements ApiClientAwareContext
+      class FeatureContext implements ApiClientAwareContextInterface
       {
           private $client;
 
@@ -25,7 +25,7 @@ Feature: client aware context
            * @Then /^the client should be set$/
            */
           public function theClientShouldBeSet() {
-              Assertion::isInstanceOf($this->client, 'GuzzleHttp\ClientInterface');
+              Assertion::isInstanceOf($this->client, ClientInterface::class);
           }
       }
       """
@@ -34,8 +34,11 @@ Feature: client aware context
     Given a file named "behat.yml" with:
       """
       default:
+        translation:
+          locale: 'en'
+          fallback_locale: 'en'
         extensions:
-          Behat\WebApiExtension: ~
+          BehatExtension\WebApiExtension: ~
       """
     And a file named "features/client.feature" with:
       """

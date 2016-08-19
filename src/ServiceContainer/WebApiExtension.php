@@ -8,11 +8,13 @@
  * file that was distributed with this source code.
  */
 
-namespace Behat\WebApiExtension\ServiceContainer;
+namespace BehatExtension\WebApiExtension\ServiceContainer;
 
 use Behat\Behat\Context\ServiceContainer\ContextExtension;
 use Behat\Testwork\ServiceContainer\Extension as ExtensionInterface;
 use Behat\Testwork\ServiceContainer\ExtensionManager;
+use BehatExtension\WebApiExtension\Context\Initializer\ApiClientAwareInitializer;
+use GuzzleHttp\Client;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -68,13 +70,13 @@ class WebApiExtension implements ExtensionInterface
 
     private function loadClient(ContainerBuilder $container, $config)
     {
-        $definition = new Definition('GuzzleHttp\Client', [['base_uri' => $config['base_url']]]);
+        $definition = new Definition(Client::class, [['base_uri' => $config['base_url']]]);
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
 
     private function loadContextInitializer(ContainerBuilder $container, $config)
     {
-        $definition = new Definition('Behat\WebApiExtension\Context\Initializer\ApiClientAwareInitializer', [
+        $definition = new Definition(ApiClientAwareInitializer::class, [
           new Reference(self::CLIENT_ID),
           $config,
         ]);

@@ -7,15 +7,18 @@ Feature: Test app verification
     Given a file named "behat.yml" with:
       """
       default:
+          translation:
+            locale: 'en'
+            fallback_locale: 'en'
           formatters:
               progress: ~
           extensions:
-              Behat\WebApiExtension:
+              BehatExtension\WebApiExtension:
                   base_url: http://localhost:8080/
 
           suites:
               default:
-                  contexts: ['Behat\WebApiExtension\Context\WebApiContext']
+                  contexts: ['BehatExtension\WebApiExtension\Context\WebApiContext']
       """
 
   Scenario: Sending form data

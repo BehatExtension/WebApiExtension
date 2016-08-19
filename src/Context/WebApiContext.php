@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Behat\WebApiExtension\Context;
+namespace BehatExtension\WebApiExtension\Context;
 
 use Assert\Assertion;
 use Behat\Gherkin\Node\PyStringNode;
@@ -30,7 +30,7 @@ class WebApiContext implements ApiClientAwareContextInterface
     private $authorization;
 
     /**
-     * @var ClientInterface
+     * @var \GuzzleHttp\ClientInterface
      */
     private $client;
 
@@ -49,6 +49,9 @@ class WebApiContext implements ApiClientAwareContextInterface
      */
     private $response;
 
+    /**
+     * @var array
+     */
     private $placeHolders = [];
 
     /**

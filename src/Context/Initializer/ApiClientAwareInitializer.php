@@ -8,11 +8,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Behat\WebApiExtension\Context\Initializer;
+namespace BehatExtension\WebApiExtension\Context\Initializer;
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Context\Initializer\ContextInitializer;
-use Behat\WebApiExtension\Context\ApiClientAwareContext;
+use BehatExtension\WebApiExtension\Context\ApiClientAwareContextInterface;
 use GuzzleHttp\ClientInterface;
 
 /**
@@ -46,7 +46,7 @@ class ApiClientAwareInitializer implements ContextInitializer
      */
     public function initializeContext(Context $context)
     {
-        if ($context instanceof ApiClientAwareContext) {
+        if ($context instanceof ApiClientAwareContextInterface) {
             $context->setClient($this->client);
         }
     }

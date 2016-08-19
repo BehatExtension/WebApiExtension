@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Behat\WebApiExtension\Context;
+namespace BehatExtension\WebApiExtension\Context;
 
 use Behat\Behat\Context\Context;
 use GuzzleHttp\ClientInterface;
