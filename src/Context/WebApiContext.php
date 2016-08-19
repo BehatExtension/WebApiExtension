@@ -231,8 +231,6 @@ class WebApiContext implements ApiClientAwareContextInterface
      *
      * @param PyStringNode $jsonString
      *
-     * @throws \RuntimeException
-     *
      * @Then /^(?:the )?response should contain json:$/
      */
     public function theResponseShouldContainJson(PyStringNode $jsonString)
@@ -241,19 +239,8 @@ class WebApiContext implements ApiClientAwareContextInterface
         $content = $this->getResponseBodyContent();
         $actual = json_decode($content, true);
 
-        if (null === $etalon) {
-            throw new \RuntimeException(
-              "Can not convert etalon to json:\n".$this->replacePlaceHolder($jsonString->getRaw())
-            );
-        }
-
-        if (null === $actual) {
-            $content = $this->getResponseBodyContent();
-            throw new \RuntimeException(
-              "Can not convert actual to json:\n".$this->replacePlaceHolder($content)
-            );
-        }
-
+        Assertion::notNull($etalon, "Can not convert etalon to json:\n".$this->replacePlaceHolder($jsonString->getRaw()));
+        Assertion::notNull($actual, "Can not convert actual to json:\n".$this->replacePlaceHolder($content));
         Assertion::greaterOrEqualThan(count($actual), count($etalon));
         foreach ($etalon as $key => $needle) {
             Assertion::keyExists($actual, $key);
