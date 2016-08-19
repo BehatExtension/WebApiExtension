@@ -22,7 +22,7 @@ use GuzzleHttp\Psr7\Request;
  *
  * @author Konstantin Kudryashov <ever.zet@gmail.com>
  */
-class WebApiContext implements ApiClientAwareContext
+class WebApiContext implements ApiClientAwareContextInterface
 {
     /**
      * @var string
