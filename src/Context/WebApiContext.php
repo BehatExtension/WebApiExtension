@@ -70,8 +70,8 @@ class WebApiContext implements ApiClientAwareContext
     public function iAmAuthenticatingAs($username, $password)
     {
         $this->removeHeader('Authorization');
-        $this->authorization = base64_encode($username . ':' . $password);
-        $this->addHeader('Authorization', 'Basic ' . $this->authorization);
+        $this->authorization = base64_encode($username.':'.$password);
+        $this->addHeader('Authorization', 'Basic '.$this->authorization);
     }
 
     /**
@@ -99,9 +99,9 @@ class WebApiContext implements ApiClientAwareContext
     {
         $url = $this->prepareUrl($url);
 
-        $this->sendRequest($method, $url, array(
+        $this->sendRequest($method, $url, [
             'headers' => $this->headers,
-        ));
+        ]);
     }
 
     /**
@@ -122,10 +122,10 @@ class WebApiContext implements ApiClientAwareContext
             $fields[$key] = $this->replacePlaceHolder($val);
         }
 
-        $this->sendRequest($method, $url, array(
+        $this->sendRequest($method, $url, [
             'headers' => $this->headers,
-            'json' => $fields,
-        ));
+            'json'    => $fields,
+        ]);
     }
 
     /**
@@ -142,10 +142,10 @@ class WebApiContext implements ApiClientAwareContext
         $url = $this->prepareUrl($url);
         $string = $this->replacePlaceHolder(trim($string));
 
-        $this->sendRequest($method, $url, array(
+        $this->sendRequest($method, $url, [
             'headers' => $this->headers,
-            'body' => $string,
-        ));
+            'body'    => $string,
+        ]);
     }
 
     /**
@@ -165,10 +165,10 @@ class WebApiContext implements ApiClientAwareContext
         $fields = [];
         parse_str(implode('&', explode("\n", $body)), $fields);
 
-        $this->sendRequest($method, $url, array(
-            'headers' => $this->headers,
+        $this->sendRequest($method, $url, [
+            'headers'     => $this->headers,
             'form_params' => $fields,
-        ));
+        ]);
     }
 
     /**
@@ -194,7 +194,7 @@ class WebApiContext implements ApiClientAwareContext
      */
     public function theResponseShouldContain($text)
     {
-        $expectedRegexp = '/' . preg_quote($text) . '/i';
+        $expectedRegexp = '/'.preg_quote($text).'/i';
         $actual = (string) $this->getResponse()->getBody()->getContents();
         Assertion::regex($actual, $expectedRegexp);
     }
@@ -208,7 +208,7 @@ class WebApiContext implements ApiClientAwareContext
      */
     public function theResponseShouldNotContain($text)
     {
-        $expectedRegexp = '/' . preg_quote($text) . '/';
+        $expectedRegexp = '/'.preg_quote($text).'/';
         $actual = (string) $this->getResponse()->getBody()->getContents();
 
         try {
@@ -239,13 +239,13 @@ class WebApiContext implements ApiClientAwareContext
 
         if (null === $etalon) {
             throw new \RuntimeException(
-              "Can not convert etalon to json:\n" . $this->replacePlaceHolder($jsonString->getRaw())
+              "Can not convert etalon to json:\n".$this->replacePlaceHolder($jsonString->getRaw())
             );
         }
 
         if (null === $actual) {
             throw new \RuntimeException(
-              "Can not convert actual to json:\n" . $this->replacePlaceHolder((string) $this->getResponse()->getBody()->getContents())
+              "Can not convert actual to json:\n".$this->replacePlaceHolder((string) $this->getResponse()->getBody()->getContents())
             );
         }
 
@@ -280,7 +280,7 @@ class WebApiContext implements ApiClientAwareContext
         $request = '';
         if ($this->getRequest() instanceof Request) {
             $request = sprintf(
-                "%s %s => ",
+                '%s %s => ',
                 $this->getRequest()->getMethod(),
                 $this->getRequest()->getUri()
             );
@@ -292,7 +292,7 @@ class WebApiContext implements ApiClientAwareContext
             $this->getResponse()->getBody()
         );
 
-         echo $request.$response;
+        echo $request.$response;
     }
 
     /**
@@ -348,7 +348,7 @@ class WebApiContext implements ApiClientAwareContext
     }
 
     /**
-     * Adds header
+     * Adds header.
      *
      * @param string $name
      * @param string $value
@@ -357,7 +357,7 @@ class WebApiContext implements ApiClientAwareContext
     {
         if (isset($this->headers[$name])) {
             if (!is_array($this->headers[$name])) {
-                $this->headers[$name] = array($this->headers[$name]);
+                $this->headers[$name] = [$this->headers[$name]];
             }
 
             $this->headers[$name][] = $value;
@@ -367,7 +367,7 @@ class WebApiContext implements ApiClientAwareContext
     }
 
     /**
-     * Removes a header identified by $headerName
+     * Removes a header identified by $headerName.
      *
      * @param string $headerName
      */
@@ -379,7 +379,7 @@ class WebApiContext implements ApiClientAwareContext
     }
 
     /**
-     * Returns the response object
+     * Returns the response object.
      *
      * @return \Psr\Http\Message\ResponseInterface
      */
@@ -393,7 +393,7 @@ class WebApiContext implements ApiClientAwareContext
     /**
      * @param string $method
      * @param string $url
-     * @param array $options
+     * @param array  $options
      */
     private function sendRequest($method, $url, $options)
     {
@@ -408,9 +408,8 @@ class WebApiContext implements ApiClientAwareContext
         }
     }
 
-
     /**
-     * Returns the response object
+     * Returns the response object.
      *
      * @return \Psr\Http\Message\RequestInterface
      */

@@ -68,16 +68,16 @@ class WebApiExtension implements ExtensionInterface
 
     private function loadClient(ContainerBuilder $container, $config)
     {
-        $definition = new Definition('GuzzleHttp\Client', array(array('base_uri' => $config['base_url'])));
+        $definition = new Definition('GuzzleHttp\Client', [['base_uri' => $config['base_url']]]);
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
 
     private function loadContextInitializer(ContainerBuilder $container, $config)
     {
-        $definition = new Definition('Behat\WebApiExtension\Context\Initializer\ApiClientAwareInitializer', array(
+        $definition = new Definition('Behat\WebApiExtension\Context\Initializer\ApiClientAwareInitializer', [
           new Reference(self::CLIENT_ID),
-          $config
-        ));
+          $config,
+        ]);
         $definition->addTag(ContextExtension::INITIALIZER_TAG);
         $container->setDefinition('web_api.context_initializer', $definition);
     }
