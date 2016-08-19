@@ -11,7 +11,6 @@ $app = new Silex\Application();
 $app->match(
     'echo',
     function (Request $req) {
-
         $factory = new DiactorosFactory();
         $request = $factory->createRequest($req);
 
@@ -29,7 +28,7 @@ $app->match(
             }
         }
 
-        /** @var string $content */
+        /* @var string $content */
         $request->getBody()->rewind();
         $content = $request->getBody()->getContents();
         if (!empty($content)) {
