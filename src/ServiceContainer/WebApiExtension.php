@@ -52,7 +52,9 @@ class WebApiExtension implements ExtensionInterface
         $builder
             ->addDefaultsIfNotSet()
             ->children()
-                ->scalarNode('base_url')->defaultValue('http://localhost')->end()
+                ->scalarNode('base_url')->defaultValue('http://127.0.0.1')->end()
+                ->booleanNode('verify')->defaultTrue()->end()
+                ->scalarNode('tls_version')->defaultValue('CURL_SSLVERSION_TLSv1_0')->end()
             ->end();
     }
 
@@ -67,9 +69,13 @@ class WebApiExtension implements ExtensionInterface
 
     private function loadClient(ContainerBuilder $container, $config)
     {
+        $tls_version = $config['tls_version'];
         $definition = new Definition(Client::class, [[
             'base_uri' => $config['base_url'],
-            'verify'   => false,
+            'verify'   => $config['verify'],
+            'curl' => [
+                CURLOPT_SSLVERSION => $$tls_version,
+            ]
         ]]);
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
