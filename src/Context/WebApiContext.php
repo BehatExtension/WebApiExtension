@@ -198,7 +198,7 @@ class WebApiContext implements ApiClientAwareContextInterface
     public function theResponseShouldContain($text)
     {
         $expectedRegexp = '/'.preg_quote($text).'/i';
-        $actual = (string) $this->getResponse()->getBody()->getContents();
+        $actual = $this->getResponseBodyContent();
         Assertion::regex($actual, $expectedRegexp);
     }
 
@@ -212,7 +212,7 @@ class WebApiContext implements ApiClientAwareContextInterface
     public function theResponseShouldNotContain($text)
     {
         $expectedRegexp = '/'.preg_quote($text).'/';
-        $actual = (string) $this->getResponse()->getBody()->getContents();
+        $actual = $this->getResponseBodyContent();
 
         try {
             Assertion::regex($actual, $expectedRegexp);
@@ -238,7 +238,8 @@ class WebApiContext implements ApiClientAwareContextInterface
     public function theResponseShouldContainJson(PyStringNode $jsonString)
     {
         $etalon = json_decode($this->replacePlaceHolder($jsonString->getRaw()), true);
-        $actual = json_decode($this->getResponse()->getBody()->getContents(), true);
+        $content = $this->getResponseBodyContent();
+        $actual = json_decode($content, true);
 
         if (null === $etalon) {
             throw new \RuntimeException(
@@ -247,8 +248,9 @@ class WebApiContext implements ApiClientAwareContextInterface
         }
 
         if (null === $actual) {
+            $content = $this->getResponseBodyContent();
             throw new \RuntimeException(
-              "Can not convert actual to json:\n".$this->replacePlaceHolder((string) $this->getResponse()->getBody()->getContents())
+              "Can not convert actual to json:\n".$this->replacePlaceHolder($content)
             );
         }
 
@@ -292,7 +294,7 @@ class WebApiContext implements ApiClientAwareContextInterface
         $response = sprintf(
             "%d:\n%s",
             $this->getResponse()->getStatusCode(),
-            $this->getResponse()->getBody()
+            $this->getResponseBodyContent()
         );
 
         echo $request.$response;
@@ -391,6 +393,19 @@ class WebApiContext implements ApiClientAwareContextInterface
         Assertion::notNull($this->response);
 
         return $this->response;
+    }
+
+    /**
+     * Returns the response body content.
+     *
+     * @return string
+     */
+    protected function getResponseBodyContent()
+    {
+        $body = $this->getResponse()->getBody();
+        $body->rewind();
+
+        return $body->getContents();
     }
 
     /**
