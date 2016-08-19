@@ -32,7 +32,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public static function cleanTestFolders()
     {
-        if (is_dir($dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'behat-web-api')) {
+        if (is_dir($dir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'behat-web-api')) {
             self::clearDirectory($dir);
         }
     }
@@ -44,10 +44,10 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function prepareScenario()
     {
-        $dir = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'behat-web-api' . DIRECTORY_SEPARATOR .
+        $dir = sys_get_temp_dir().DIRECTORY_SEPARATOR.'behat-web-api'.DIRECTORY_SEPARATOR.
             md5(microtime() * rand(0, 10000));
 
-        mkdir($dir . '/features/bootstrap', 0777, true);
+        mkdir($dir.'/features/bootstrap', 0777, true);
 
         $phpFinder = new PhpExecutableFinder();
         if (false === $php = $phpFinder->find()) {
@@ -68,12 +68,12 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function aFileNamedWith($filename, PyStringNode $content)
     {
-        $content = strtr((string) $content, array("'''" => '"""'));
-        $this->createFile($this->workingDir . '/' . $filename, $content);
+        $content = strtr((string) $content, ["'''" => '"""']);
+        $this->createFile($this->workingDir.'/'.$filename, $content);
     }
 
     /**
-     * Runs behat command with provided parameters
+     * Runs behat command with provided parameters.
      *
      * @When /^I run "behat(?: ((?:\"|[^"])*))?"$/
      *
@@ -81,7 +81,7 @@ class FeatureContext implements SnippetAcceptingContext
      */
     public function iRunBehat($argumentsString = '')
     {
-        $argumentsString = strtr($argumentsString, array('\'' => '"'));
+        $argumentsString = strtr($argumentsString, ['\'' => '"']);
 
         $this->process->setWorkingDirectory($this->workingDir);
         $this->process->setCommandLine(
@@ -90,7 +90,7 @@ class FeatureContext implements SnippetAcceptingContext
                 $this->phpBin,
                 escapeshellarg(BEHAT_BIN_PATH),
                 $argumentsString,
-                strtr('--format-settings=\'{"timer": false}\' --no-colors', array('\'' => '"', '"' => '\"'))
+                strtr('--format-settings=\'{"timer": false}\' --no-colors', ['\'' => '"', '"' => '\"'])
             )
         );
         $this->process->start();
@@ -125,7 +125,7 @@ class FeatureContext implements SnippetAcceptingContext
 
     private function getExpectedOutput(PyStringNode $expectedText)
     {
-        $text = strtr($expectedText, array('\'\'\'' => '"""'));
+        $text = strtr($expectedText, ['\'\'\'' => '"""']);
 
         // windows path fix
         if ('/' !== DIRECTORY_SEPARATOR) {
@@ -160,13 +160,13 @@ class FeatureContext implements SnippetAcceptingContext
     {
         if ('fail' === $success) {
             if (0 === $this->getExitCode()) {
-                echo 'Actual output:' . PHP_EOL . PHP_EOL . $this->getOutput();
+                echo 'Actual output:'.PHP_EOL.PHP_EOL.$this->getOutput();
             }
 
             Assertion::notEq(0, $this->getExitCode());
         } else {
             if (0 !== $this->getExitCode()) {
-                echo 'Actual output:' . PHP_EOL . PHP_EOL . $this->getOutput();
+                echo 'Actual output:'.PHP_EOL.PHP_EOL.$this->getOutput();
             }
 
             Assertion::eq(0, $this->getExitCode());
@@ -180,14 +180,14 @@ class FeatureContext implements SnippetAcceptingContext
 
     private function getOutput()
     {
-        $output = $this->process->getErrorOutput() . $this->process->getOutput();
+        $output = $this->process->getErrorOutput().$this->process->getOutput();
 
         // Normalize the line endings in the output
         if ("\n" !== PHP_EOL) {
             $output = str_replace(PHP_EOL, "\n", $output);
         }
 
-        return trim(preg_replace("/ +$/m", '', $output));
+        return trim(preg_replace('/ +$/m', '', $output));
     }
 
     private function createFile($filename, $content)
@@ -207,7 +207,7 @@ class FeatureContext implements SnippetAcceptingContext
         array_shift($files);
 
         foreach ($files as $file) {
-            $file = $path . DIRECTORY_SEPARATOR . $file;
+            $file = $path.DIRECTORY_SEPARATOR.$file;
             if (is_dir($file)) {
                 self::clearDirectory($file);
             } else {
