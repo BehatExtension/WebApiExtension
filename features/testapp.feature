@@ -16,7 +16,6 @@ Feature: Test app verification
               BehatExtension\WebApiExtension\ServiceContainer\WebApiExtension:
                   base_url: https://127.0.0.1:8181
                   verify: false
-
           suites:
               default:
                   contexts: ['BehatExtension\WebApiExtension\Context\WebApiContext']

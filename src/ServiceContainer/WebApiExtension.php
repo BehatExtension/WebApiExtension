@@ -68,7 +68,6 @@ class WebApiExtension implements ExtensionInterface
 
     private function loadClient(ContainerBuilder $container, $config)
     {
-        $tls_version = $config['tls_version'];
         $definition = new Definition(Client::class, [[
             'base_uri' => $config['base_url'],
             'verify'   => $config['verify'],
