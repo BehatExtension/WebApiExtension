@@ -13,7 +13,7 @@ Feature: Test app verification
           formatters:
               progress: ~
           extensions:
-              BehatExtension\WebApiExtension:
+              BehatExtension\WebApiExtension\ServiceContainer\WebApiExtension:
                   base_url: http://localhost:8080/
 
           suites:

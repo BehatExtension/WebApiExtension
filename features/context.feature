@@ -38,7 +38,7 @@ Feature: client aware context
           locale: 'en'
           fallback_locale: 'en'
         extensions:
-          BehatExtension\WebApiExtension: ~
+          BehatExtension\WebApiExtension\ServiceContainer\WebApiExtension: ~
       """
     And a file named "features/client.feature" with:
       """
