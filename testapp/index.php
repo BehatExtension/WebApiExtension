@@ -1,10 +1,11 @@
 <?php
 
+require_once __DIR__.'/../vendor/autoload.php';
+
 use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-require_once __DIR__.'/../vendor/autoload.php';
 
 $app = new Silex\Application();
 
@@ -13,7 +14,6 @@ $app->match(
     function (Request $req) {
 
         $psr7Factory = new DiactorosFactory();
-
         $request = $psr7Factory->createRequest($req);
         $ret = [
             'warning' => 'Do not expose this service in production : it is intrinsically unsafe',
@@ -22,7 +22,6 @@ $app->match(
         $ret['method'] = $request->getMethod();
 
         // Forms should be read from request, other data straight from input.
-        $requestData = $request->request->all();
         if (!empty($requestData)) {
             foreach ($requestData as $key => $value) {
                 $ret[$key] = $value;
