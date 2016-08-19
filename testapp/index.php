@@ -29,7 +29,6 @@ $app->match(
             }
         }
 
-        /** @var string $content */
         $request->getBody()->rewind();
         $content = $request->getBody()->getContents();
         if (!empty($content)) {
