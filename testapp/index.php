@@ -1,5 +1,6 @@
 <?php
 
+use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -10,14 +11,18 @@ $app = new Silex\Application();
 $app->match(
     'echo',
     function (Request $req) {
+
+        $psr7Factory = new DiactorosFactory();
+
+        $request = $psr7Factory->createRequest($req);
         $ret = [
             'warning' => 'Do not expose this service in production : it is intrinsically unsafe',
         ];
 
-        $ret['method'] = $req->getMethod();
+        $ret['method'] = $request->getMethod();
 
         // Forms should be read from request, other data straight from input.
-        $requestData = $req->request->all();
+        $requestData = $request->request->all();
         if (!empty($requestData)) {
             foreach ($requestData as $key => $value) {
                 $ret[$key] = $value;
@@ -25,7 +30,7 @@ $app->match(
         }
 
         /** @var string $content */
-        $content = $req->getContent(false);
+        $content = $request->getBody()->getContents();
         if (!empty($content)) {
             $data = json_decode($content, true);
             if (!is_array($data)) {
@@ -38,10 +43,10 @@ $app->match(
         }
 
         $ret['headers'] = [];
-        foreach ($req->headers->all() as $k => $v) {
+        foreach ($request->headers->all() as $k => $v) {
             $ret['headers'][$k] = $v;
         }
-        foreach ($req->query->all() as $k => $v) {
+        foreach ($request->query->all() as $k => $v) {
             $ret['query'][$k] = $v;
         }
         $response = new JsonResponse($ret);
