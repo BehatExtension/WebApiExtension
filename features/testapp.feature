@@ -14,7 +14,7 @@ Feature: Test app verification
               progress: ~
           extensions:
               BehatExtension\WebApiExtension\ServiceContainer\WebApiExtension:
-                  base_url: http://localhost:8080/
+                  base_url: https://localhost:8181/
 
           suites:
               default:
