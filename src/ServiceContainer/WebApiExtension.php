@@ -69,7 +69,8 @@ class WebApiExtension implements ExtensionInterface
     {
         $definition = new Definition(Client::class, [[
             'base_uri' => $config['base_url'],
-            'verify'   => false
+            'strict'   => false,
+            'verify'   => false,
         ]]);
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
