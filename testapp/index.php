@@ -1,20 +1,15 @@
 <?php
 
-use Symfony\Bridge\PsrHttpMessage\Factory\DiactorosFactory;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-
 require_once __DIR__.'/../vendor/autoload.php';
+
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RequestInterface;
 
 $app = new Silex\Application();
 
 $app->match(
     'echo',
-    function (Request $req) {
-
-        $factory = new DiactorosFactory();
-        $request = $factory->createRequest($req);
-
+    function (RequestInterface $req) {
         $ret = [
             'warning' => 'Do not expose this service in production : it is intrinsically unsafe',
         ];
@@ -22,36 +17,31 @@ $app->match(
         $ret['method'] = $request->getMethod();
 
         // Forms should be read from request, other data straight from input.
-        $requestData = $request->getParsedBody();
+        $requestData = $req->request->all();
         if (!empty($requestData)) {
-            foreach ($requestData as $key => $value) {
-                $ret[$key] = $value;
-            }
+            $ret = array_merge(
+                $ret,
+                $requestData as $key => $value
+            );
         }
 
-        $request->getBody()->rewind();
-        $content = $request->getBody()->getContents();
+        $content = $req->getContent(false);
         if (!empty($content)) {
             $data = json_decode($content, true);
             if (!is_array($data)) {
                 $ret['content'] = $content;
             } else {
-                foreach ($data as $key => $value) {
-                    $ret[$key] = $value;
-                }
+                $ret = array_merge(
+                    $ret,
+                    $data
+                );
             }
         }
 
-        $ret['headers'] = [];
-        foreach ($request->getHeaders() as $k => $v) {
-            $ret['headers'][$k] = $v;
-        }
-        foreach ($request->getQueryParams() as $k => $v) {
-            $ret['query'][$k] = $v;
-        }
-        $response = new JsonResponse($ret);
-
-        return $response;
+        $ret['headers'] = $req->headers->all();
+        $ret['query'] = $req->query->all();
+        
+        return new JsonResponse($ret);
     }
 );
 
