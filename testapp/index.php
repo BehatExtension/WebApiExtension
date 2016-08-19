@@ -38,7 +38,7 @@ $app->match(
 
         $ret['headers'] = $req->headers->all();
         $ret['query'] = $req->query->all();
-        
+
         return new JsonResponse($ret);
     }
 );
