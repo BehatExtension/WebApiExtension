@@ -52,10 +52,7 @@ class WebApiExtension implements ExtensionInterface
         $builder
             ->addDefaultsIfNotSet()
             ->children()
-                ->scalarNode('base_url')
-                    ->defaultValue('http://localhost')
-                    ->end()
-                ->end()
+                ->scalarNode('base_url')->defaultValue('http://localhost')->end()
             ->end();
     }
 
@@ -70,7 +67,10 @@ class WebApiExtension implements ExtensionInterface
 
     private function loadClient(ContainerBuilder $container, $config)
     {
-        $definition = new Definition(Client::class, [['base_uri' => $config['base_url']]]);
+        $definition = new Definition(Client::class, [[
+            'base_uri' => $config['base_url'],
+            'strict'   => false
+        ]]);
         $container->setDefinition(self::CLIENT_ID, $definition);
     }
 
