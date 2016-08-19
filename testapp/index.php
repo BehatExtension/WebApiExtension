@@ -18,12 +18,10 @@ $app->match(
 
         // Forms should be read from request, other data straight from input.
         $requestData = $req->request->all();
-        if (!empty($requestData)) {
-            $ret = array_merge(
-                $ret,
-                $requestData as $key => $value
-            );
-        }
+        $ret = array_merge(
+            $ret,
+            $requestData
+        );
 
         $content = $req->getContent(false);
         if (!empty($content)) {
