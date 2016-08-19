@@ -21,7 +21,7 @@ install:
     - openssl genrsa 1024 > stunnel.key
     - openssl req -batch -subj '/CN=127.0.0.1' -new -x509 -nodes -sha1 -days 3650 -key stunnel.key > stunnel.cert
     - cat stunnel.cert stunnel.key > stunnel.pem
-    - ./stud/stud --daemon --ssl -f 127.0.0.1,8181 -b 127.0.0.1,8080 stunnel.pem
+    - ./stud/stud --daemon  -f 127.0.0.1,8181 -b 127.0.0.1,8080 stunnel.pem
 
 matrix:
     fast_finish: true
