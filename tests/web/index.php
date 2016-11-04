@@ -3,7 +3,7 @@
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__.'/../../vendor/autoload.php';
 error_reporting(E_ALL ^ E_DEPRECATED);
 
 $app = new Silex\Application();
